@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="CatanBoardGenerator">
+  
+  <head>
+    <title>Catan Generator</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+   	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+
+   	<link rel="stylesheet" type="text/css" href="css/main.css" media="screen" />
+   	<link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
+   	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+   	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+   	<script src="js/index.js" ></script>
+   	<script src='js/pdfmake.min.js'></script>
+ 	<script src='js/vfs_fonts.js'></script>
+ 	<script src='js/html2canvas.js'></script>
+ 	<script src='js/html2canvas.svg.js'></script>
+ 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
+
+  </head>
+  
+  <body ng-controller="MainController" style="background-image: url('resources/background.jpg');">
+  	<div class="container">
+  		
+		<h1>Catan Board Generator v1</h1>
+
+		<hr style="height:3px">
+
+		<!-- Board -->
+		<div class="row">
+			<div class="col-md-4" style="background-color:white;border:1px solid #EEE;border-radius:10px;padding-top:20px;padding-bottom:20px">
+
+				<!-- Select Tab -->
+				<ul class="nav nav-tabs">
+				  	<li ng-class="{active: tab == 'board'}"><a ng-click="tab = 'board'">Board</a></li>
+				  	<li ng-class="{active: tab == 'cards'}"><a ng-click="tab = 'cards'">Cards</a></li>
+				  	<li ng-class="{active: tab == 'misc'}"><a ng-click="tab = 'misc'">Miscellaneous</a></li>
+				</ul>
+
+				<br>
+
+				<!-- Left-Side Menu-->
+				<div ng-show="tab == 'board'">
+					<form>
+						<fieldset class="form-group">
+							<div class="form-group">
+								<label for="name">Board Name</label>
+								<input type="text" ng-model="game.name" class="form-control" id="name" placeholder="Enter a Board Name">
+								<small class="form-text text-muted">All generated files will contain the board name</small>
+
+							</div>
+						<fieldset>
+						<fieldset class="form-group">
+							<legend>Type</legend>			
+							<div class="form-check">
+								<label class="form-check-label">
+								<input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+								Normal
+								</label>
+							</div>
+							<div class="form-check">
+								<label class="form-check-label">
+								<input type="radio" class="form-check-input" disabled name="optionsRadios" id="optionsRadios2" value="option2">
+								Expansion
+								</label>
+								<small class="form-text text-muted">Coming soon!</small>
+
+							</div>
+							<div class="form-check">
+								<label class="form-check-label">
+								<input type="radio" class="form-check-input" disabled name="optionsRadios" id="optionsRadios2" value="option2">
+								Seafarers
+								</label>
+								<small class="form-text text-muted">Coming soon!</small>
+
+							</div>
+							<div class="form-check">
+								<label class="form-check-label">
+								<input type="radio" class="form-check-input" disabled name="optionsRadios" id="optionsRadios2" value="option2">
+								Cities and Knights
+								</label>
+								<small class="form-text text-muted">Coming soon!</small>
+							</div>
+						</fieldset>
+						<button type="submit"class="btn btn-default" style="width:100%;margin-top:20px" ng-click="scrambleTiles();setTiles();">Scramble</button>
+					</form>
+
+					<button type="submit" ng-click="generateBoard('exportDiv')" class="btn btn-info" style="display:block;margin-top:20px;width:100%">Print</button>
+				</div>
+
+				<div ng-show="tab == 'cards'">
+					<legend>Number of Cards</legend>			
+					<div class="form-group row">
+						<label class="col-xs-2">Brick:</label>
+						<div class="col-xs-10">
+							<input min="0" class="form-control" type="number" ng-model="game.cards.brick">
+						</div>
+						<label class="col-xs-2">Ore:</label>
+						<div class="col-xs-10">
+							<input min="0" class="form-control" type="number" ng-model="game.cards.ore">
+						</div>
+						<label class="col-xs-2">Wheat:</label>
+						<div class="col-xs-10">
+							<input min="0" class="form-control" type="number" ng-model="game.cards.wheat">
+						</div>
+						<label class="col-xs-2">Sheep:</label>
+						<div class="col-xs-10">
+							<input min="0" class="form-control" type="number" ng-model="game.cards.sheep">
+						</div>
+						<label class="col-xs-2">Wood:</label>
+						<div class="col-xs-10">
+							<input min="0" class="form-control" type="number" ng-model="game.cards.wood">
+						</div>
+					</div>
+
+					<button type="submit"class="btn btn-info" style="width:100%;margin-top:20px" ng-click="generateCards();">Generate and Print</button>
+				</div>
+
+				<div ng-show="tab == 'misc'">
+					<legend>Misc Items</legend>			
+					<div class="form-group row">
+						<label class="col-xs-4">Largest Army:</label>
+						<div class="col-xs-8">
+							<input min="0" class="form-control" type="number" ng-model="game.misc.largestArmy">
+						</div>
+						<label class="col-xs-4">Road Building:</label>
+						<div class="col-xs-8">
+							<input min="0" class="form-control" type="number" ng-model="game.misc.longestRoad">
+						</div>
+						<label class="col-xs-4">Building Cost:</label>
+						<div class="col-xs-8">
+							<input min="0" class="form-control" type="number" ng-model="game.misc.buildingCost">
+						</div>
+					</div>
+
+					<button type="submit"class="btn btn-info" style="width:100%;margin-top:20px" ng-click="generateMisc();">Generate and Print</button>
+				</div>
+
+			</div>
+
+			<!-- Display Area -->
+			<div class="col-sm-8 col-md-8 col-lg-8"> 
+
+				<!-- Display Area - Board -->
+				<div ng-show="tab == 'board'">
+					<div id = "exportDiv" style="position:absolute;width:700px;height:500px;padding:10px">
+						<div style="position: absolute;left: 200px">
+							<div class="row1 tile" id="tile0">
+								<div class="circle">{{token[0]}}</div>
+							</div>
+							<div class="row1 tile" id="tile1">
+								<div class="circle">{{token[1]}}</div>
+							</div>
+							<div class="row1 tile" id="tile2">
+								<div class="circle">{{token[2]}}</div>
+							</div>
+						</div>
+						<div style="position: absolute;left: 140px;top:100px">
+							<div class="row2 tile" style="clear:both" id="tile3">
+								<div class="circle">{{token[3]}}</div>
+							</div>
+						 	<div class="row2 tile" id="tile4">
+								<div class="circle">{{token[4]}}</div>
+						 	</div>
+							<div class="row2 tile" id="tile5">
+								<div class="circle">{{token[5]}}</div>
+							</div>
+							<div class="row2 tile" id="tile6">
+								<div class="circle">{{token[6]}}</div>
+							</div>
+						</div>
+						<div style="position: absolute;left: 80px;top:190px">
+							<div class="row3 tile" style="clear:both" id="tile7">
+								<div class="circle">{{token[7]}}</div>
+							</div>
+							<div class="row3 tile" id="tile8">
+								<div class="circle">{{token[8]}}</div>
+							</div>
+							<div class="row3 tile" id="tile9">
+								<div class="circle">{{token[9]}}</div>
+							</div>
+							<div class="row3 tile" id="tile10">
+								<div class="circle">{{token[10]}}</div>
+							</div>
+							<div class="row3 tile" id="tile11">
+								<div class="circle">{{token[11]}}</div>
+							</div>
+						</div>
+						<div style="position: absolute;left: 140px;top:280px">
+							<div class="row4 tile" style="clear:both" id="tile12">
+								<div class="circle">{{token[12]}}</div>
+							</div>
+							<div class="row4 tile" id="tile13">
+								<div class="circle">{{token[13]}}</div>
+							</div>
+							<div class="row4 tile" id="tile14">
+								<div class="circle">{{token[14]}}</div>
+							</div>
+							<div class="row4 tile" id="tile15">
+								<div class="circle">{{token[15]}}</div>
+							</div>	
+						</div>
+						<div style="position: absolute;left: 200px;top:370px">
+							<div class="row5 tile" style="clear:both" id="tile16">
+								<div class="circle">{{token[16]}}</div>
+							</div>
+							<div class="row5 tile" id="tile17">
+								<div class="circle">{{token[17]}}</div>
+							</div>
+							<div class="row5 tile" id="tile18">
+								<div class="circle">{{token[18]}}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Display Area - Card -->
+				<div ng-show="tab == 'cards'">
+					<div style="padding-left:50px">
+						<div class="row">
+							<div class="col-sm-2">
+								<img src="resources/brick_card.png" class="card"></img>
+							</div>
+							<div class="col-sm-2" style="margin-top:50px">
+								<span class="cardCounter">X {{game.cards.brick}}</span>
+								<div>
+									<i class="fa fa-arrow-circle-o-up fa-2x" ng-click="game.cards.brick = game.cards.brick + 1 "></i>
+									<i class="fa fa-arrow-circle-o-down fa-2x" ng-click="game.cards.brick = game.cards.brick - 1 "></i>
+								</div>
+							</div>
+							<div class="col-sm-2">
+								<img src="resources/ore_card.png" class="card"></img>
+							</div>
+							<div class="col-sm-2" style="margin-top:50px">
+								<span class="cardCounter">X {{game.cards.ore}}</span>
+								<div>
+									<i class="fa fa-arrow-circle-o-up fa-2x" ng-click="game.cards.ore = game.cards.ore + 1 "></i>
+									<i class="fa fa-arrow-circle-o-down fa-2x" ng-click="game.cards.ore = game.cards.ore - 1 "></i>
+								</div>
+							</div>
+							<div class="col-sm-2">
+								<img src="resources/wheat_card.png" class="card"></img>
+							</div>
+							<div class="col-sm-2" style="margin-top:50px">
+								<span class="cardCounter">X {{game.cards.wheat}}</span>
+								<div>
+									<i class="fa fa-arrow-circle-o-up fa-2x" ng-click="game.cards.wheat = game.cards.wheat + 1 "></i>
+									<i class="fa fa-arrow-circle-o-down fa-2x" ng-click="game.cards.wheat = game.cards.wheat - 1 "></i>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							
+							<div class="col-sm-2">
+								<img src="resources/sheep_card.png" class="card"></img>
+							</div>
+							<div class="col-sm-2" style="margin-top:50px">
+								<span class="cardCounter">X {{game.cards.sheep}}</span>
+								<div>
+									<i class="fa fa-arrow-circle-o-up fa-2x" ng-click="game.cards.sheep = game.cards.sheep + 1 "></i>
+									<i class="fa fa-arrow-circle-o-down fa-2x" ng-click="game.cards.sheep = game.cards.sheep - 1 "></i>
+								</div>
+							</div>
+							<div class="col-sm-2">
+								<img src="resources/wood_card.png" class="card"></img>
+							</div>
+							<div class="col-sm-2" style="margin-top:50px">
+								<span class="cardCounter">X {{game.cards.wood}}</span>
+								<div>
+									<i class="fa fa-arrow-circle-o-up fa-2x" ng-click="game.cards.wood = game.cards.wood + 1 "></i>
+									<i class="fa fa-arrow-circle-o-down fa-2x" ng-click="game.cards.wood = game.cards.wood - 1 "></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Display Area - Misc -->
+				<div ng-show="tab == 'misc'">
+
+					<div class="row" style="padding-left:50px">
+						<div class="col-sm-3">
+							<img class="miscCard" src="resources/largestArmy.png"></img>
+						</div>
+						<div class="col-sm-3" style="margin-top:50px">
+							<span class="cardCounter">X {{game.misc.largestArmy}}</span>
+							<div>
+								<i class="fa fa-arrow-circle-o-up fa-2x" ng-click="game.misc.largestArmy = game.misc.largestArmy + 1 "></i>
+								<i class="fa fa-arrow-circle-o-down fa-2x" ng-click="game.misc.largestArmy = game.misc.largestArmy - 1 "></i>
+							</div>
+						</div>
+						<div class="col-sm-3">
+							<img class="miscCard" src="resources/longestRoad.png"></img>
+						</div>
+						<div class="col-sm-3" style="margin-top:50px">
+							<span class="cardCounter">X {{game.misc.longestRoad}}</span>
+							<div>
+								<i class="fa fa-arrow-circle-o-up fa-2x" ng-click="game.misc.longestRoad = game.misc.longestRoad + 1 "></i>
+								<i class="fa fa-arrow-circle-o-down fa-2x" ng-click="game.misc.longestRoad = game.misc.longestRoad - 1 "></i>
+							</div>
+						</div>
+					</div>
+
+					<div class="row" style="padding-left:50px">
+						<div class="col-sm-3">
+							<img class="miscCard" src="resources/buildingCost.png"></img>
+						</div>
+						<div class="col-sm-3" style="margin-top:50px">
+							<span class="cardCounter">X {{game.misc.buildingCost}}</span>
+							<div>
+								<i class="fa fa-arrow-circle-o-up fa-2x" ng-click="game.misc.buildingCost = game.misc.buildingCost + 1 "></i>
+								<i class="fa fa-arrow-circle-o-down fa-2x" ng-click="game.misc.buildingCost = game.misc.buildingCost - 1 "></i>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+			</div>
+		<div>
+	</div>
+  </body>
+</html>
+
+
+
+
